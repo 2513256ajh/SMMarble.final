@@ -28,8 +28,17 @@
 #define SMMNODE_OBJTYPE_BOARD          0
 #define SMMNODE_OBJTYPE_GRADE          1
 #define SMMNODE_OBJTYPE_FOOD           2
-#define SMMNODE_OBJTYPE_FEST           3//외부에서 쓰는거라 대문자 smmnode 
+#define SMMNODE_OBJTYPE_FEST           3
 
+#define GRADE_Ap                       0
+#define GRADE_A0                       1
+#define GRADE_Am                       2
+#define GRADE_Bp                       3
+#define GRADE_B0                       4
+#define GRADE_Bm                       5
+#define GRADE_Cp                       6
+#define GRADE_C0                       7
+#define GRADE_Cm                       8
 /* grade :
     A+,
     A0,
@@ -50,10 +59,12 @@ char* smmObj_getObjectName(void *ptr);
 int smmObj_getObjectType(void *ptr);
 int smmObj_getObjectEnergy(void *ptr);
 char* smmObj_getTypeName(void *ptr);
+int smmObj_getObjectGrade(void *ptr);
 //member retrieving
 
 
 //element to string
+
 
 
 

@@ -14,16 +14,6 @@
 
 
 
-#define GRADE_Ap                       0
-#define GRADE_A0                       1
-#define GRADE_Am                       2
-#define GRADE_Bp                       3
-#define GRADE_B0                       4
-#define GRADE_Bm                       5
-#define GRADE_Cp                       6
-#define GRADE_C0                       7
-#define GRADE_Cm                       8
-
 static char smmObj_nodeName[MAX_NODETYPE][MAX_CHARNAME] ={
        "lecture",
        "restaurant",
@@ -78,42 +68,48 @@ void* smmObj_genObject(char* name, int objType, int type, int credit, int energy
 
 
 //member retrieving
-char* smmObj_getObjectName(void *ptr)//////////////////////////////////////////////
+char* smmObj_getObjectName(void *ptr)
 {
-      smmObj_object_t* objPtr = (smmObj_object_t*)ptr;////////////////// 
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
       
-      return (objPtr->name);
+    return (objPtr->name);
 }
 
 int smmObj_getObjectType(void *ptr)
 {
-      smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
       
-      return (objPtr->type);
+    return (objPtr->type);
 }
 
 int smmObj_getObjectCredit(void *ptr)
 {
-      smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
       
-      return (objPtr->credit);
+    return (objPtr->credit);
 }
 
 int smmObj_getObjectEnergy(void *ptr)
 {
-      smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
       
-      return (objPtr->energy);
+    return (objPtr->energy);
 }
 
 char* smmObj_getTypeName(void *ptr)
 {
-      smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
       
-      return smmObj_nodeName[objPtr->type];
+    return smmObj_nodeName[objPtr->type];
 }
 
-//grade, objecttypeµµ  
+int smmObj_getObjectGrade(void *ptr)
+{
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
+      
+    return (objPtr->grade);
+}
+
 
 #if 0
 char* smmObj_getGradeName(smmGrade_e grade)
