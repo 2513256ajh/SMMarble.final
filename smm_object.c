@@ -34,8 +34,8 @@ static char smmObj_gradeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] ={
        "Cp",
        "C0",
        "Cm"
-    
 };
+
 
 //structure type definition
 typedef struct {
