@@ -208,9 +208,15 @@ void printPlayerStatus(void) //print all player status at the beginning of each 
      
      for (i=0;i<smm_player_nr;i++)
      {
-         printf("%s - position: %i(%s), credit: %i, energy: %i\n",
+         //eexperiment status : doing experiment
+         if(smm_players[i].flag_doingexp == 1)
+         printf("%s - position: %i(%s), credit: %i, energy: %i, Doing experiment\n",
                     smm_players[i].name, smm_players[i].pos, smmObj_getObjectName(ptr), smm_players[i].credit, smm_players[i].energy);
-                    ////////////////////// 실험 중 미해결(실험중, 실험 안 함 지정해야할까? )  
+         
+         //experiment status : not doing experiment           
+         else if(smm_players[i].flag_doingexp == 0)
+         printf("%s - position: %i(%s), credit: %i, energy: %i, Not doing experiment\n",
+                    smm_players[i].name, smm_players[i].pos, smmObj_getObjectName(ptr), smm_players[i].credit, smm_players[i].energy);
      }
      printf("=====================PLAYER STATUS=====================\n");
 }
@@ -239,143 +245,155 @@ void actionNode(int player)//action code when a player stays at a node
      int grade;
      void* gradePtr;
     
-     printf(" --> player %s, pos : %i, type : %s, credit : %i, energy : %i\n", smm_players[player].name, smm_players[player].pos, smmObj_getTypeName(ptr), credit, smm_players[player].energy);
-     
-     switch(type)
-     {
-          case SMMNODE_TYPE_LECTURE: //현재 에너지가 필요에너지 이상 있고 이전에 
-        //듣지 않은 강의이면 수강 가능, 수강 혹은 드랍 선택할 수 있
-          {
-          char choice[10];
-          char join;
-          char drop;
-          void* ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
+     printf(" --> player %s, pos : %i, type : %s, credit : %i, energy : %i\n", 
+                   smm_players[player].name, smm_players[player].pos, smmObj_getTypeName(ptr), credit, smm_players[player].energy);
+      
+         switch(type)
+         { 
+              case SMMNODE_TYPE_LECTURE: //have enough energy and new lecture, possible to choose join of drop
+              {
+                  char choice;
+                  char join = '1';
+                  int drop = '0';
+                  ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
            
-          //enough energy, new lecture--> choose join/drop
-          if((smm_players[player].energy >= smmObj_getObjectEnergy(ptr))&&(findGrade(player, smmObj_getObjectName(ptr))!= NULL ))//////////////////////////////////////
-               {
-                                         #if 0
-               do{
-               printf("Lecture %s(credit:%i, energy:%i) starts! are you going to join? or drop?\n", smmObj_getObjectName(ptr),
-                                                                                                  smmObj_getObjectCredit(ptr), smmObj_getObjectEnergy(ptr));
-               scanf(" %c", choice);
-               if(strcmp(choice[10], join)==0)
-                   {
-                                     #endif
-                   smm_players[player].credit += credit;
-                   smm_players[player].energy -= energy;
-                   grade = rand()%SMMNODE_MAX_GRADE;
+                  //case 1: have enough energy, new lecture
+                  if((smm_players[player].energy >= smmObj_getObjectEnergy(ptr))&&(findGrade(player, smmObj_getObjectName(ptr))!= NULL ))//////////////////////////////////////
+                  {
+                       do{
+                       //choose drop or join
+                       printf("Lecture %s(credit:%i, energy:%i) starts! are you going to join(press : 1)? or drop(press : 0)?\n", 
+                                                        smmObj_getObjectName(ptr), smmObj_getObjectCredit(ptr), smmObj_getObjectEnergy(ptr));
+                       scanf(" %c", &choice);
+                       //case 1-1: join the lecture and get credit(require energy)
+                       if(choice == join)
+                       {     
+                           smm_players[player].credit += credit;
+                           smm_players[player].energy -= energy;
+                           grade = rand()%SMMNODE_MAX_GRADE;
             
-                   gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, type, credit, energy, grade);
-                   smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr);
-                   printf("%s successfully takes the lecture %s with grade %c (average : %i), remained energy : %i)\n", smm_players[player].name, smmObj_getObjectName(ptr),
-                                                                                                            gradePtr, calcAverageGrade(smm_players[player].name), smm_players[player].energy);  
-                    #if 0
-                   }//평균 학점  
-                   else if(strcmp(choice[10], drop)==1)
-                   printf("Player %s drops the lecture %s\n", smm_players[player].name, smmObj_getObjectName(ptr));
-                  
-                   else                                                                                   
-                   printf("Invalid input! input \"drop\" or \"join\"/n");
-                 }while(choice[10] != join || choice[10] != drop);
-                 #endif
-               }
-               else if(energy < smmObj_getObjectEnergy(ptr))
-               printf("%s is too hungry to take the lecture %s (remained:%i, required:%i)\n", smm_players[player].name, smmObj_getObjectName(ptr),
-                                                                                              smm_players[player].energy, smmObj_getObjectEnergy(ptr));//required 멘트확인  
-               else if((findGrade(player, smmObj_getObjectName(ptr))== NULL ))
-               printf("");//////////멘트 확인 
+                           gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, type, credit, energy, grade);
+                           smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr);
+                           printf("%s successfully takes the lecture %s with grade %c (average : %i), remained energy : %i)\n", 
+                             smm_players[player].name, smmObj_getObjectName(ptr), gradePtr, calcAverageGrade(smm_players[player].name), smm_players[player].energy);  
+                       }//평균 학점 이상한 듯  
+                       //case 1-2: drop
+                       else if(choice == drop)
+                       printf("Player %s drops the lecture %s\n", smm_players[player].name, smmObj_getObjectName(ptr));
+                       //case 1-3: user input invalid value
+                       else                                                                                   
+                       printf("Invalid input! input \"drop\" or \"join\"\n");
+                       }while(choice != join && choice != drop);
+                
+                 }
+              //case 2: leck of energy
+              else if(energy < smmObj_getObjectEnergy(ptr))
+              printf("%s is too hungry to take the lecture %s (remained:%i, required:%i)\n",
+                                             smm_players[player].name, smmObj_getObjectName(ptr), smm_players[player].energy, smmObj_getObjectEnergy(ptr)); 
                
-               break;
-          }
-          case SMMNODE_TYPE_RESTAURANT:
-               smm_players[player].energy += energy;
-               smmdb_getData(LISTNO_NODE, smm_players[player].pos);
-               printf("Let's eat in %s and charge %i energies(remained energy : %i)\n", smmObj_getObjectName(ptr), smmObj_getObjectEnergy(ptr), smm_players[player].energy);
-               break;
+              //case3: already took the lecture                                                                               
+              else if((findGrade(player, smmObj_getObjectName(ptr))== NULL ))
+              printf("%s already took a class\n", smm_players[player].name);//////////멘트 확인  
+              else ; 
+               
+              break;
+              }
+              case SMMNODE_TYPE_RESTAURANT:
+              {
+                  smm_players[player].energy += energy;
+                  smmdb_getData(LISTNO_NODE, smm_players[player].pos);
+                  printf("Let's eat in %s and charge %i energies(remained energy : %i)\n", 
+                                                smmObj_getObjectName(ptr), smmObj_getObjectEnergy(ptr), smm_players[player].energy);
+                  break;
+               }
             
-          case SMMNODE_TYPE_LABORATORY:
-          { 
-               int exp_result;
-                   if(smm_players[player].flag_doingexp == 1)
-                   {
-                   printf(" ->Experiment time! Let's see if you can satisfy professor (threshold: 5)\n");
-                   exp_result = rolldie(player); //////////////이거 잘 모르겠음. if doingep면 무조건 실험실 케이스로 오게 해야...   
+              case SMMNODE_TYPE_LABORATORY:
+              { 
+                  int exp_result;
+                  if(smm_players[player].flag_doingexp == 1)
+                  {
+                      printf(" ->Experiment time! Let's see if you can satisfy professor (threshold: %i)\n", exp_result);
+                      exp_result = rolldie(player); //////////////이거 잘 모르겠음. if doingep면 무조건 실험실 케이스로 오게 해야...   
             
-                       if(exp_result >= 5)
-                       {
-                       printf(" -> Experiment result : %i, success! %s can exit this lab!\n", exp_result);
-                       smm_players[player].flag_doingexp == 0;
-                       }
-            
-                       else
-                       printf(" -> Experiment result : %i, fail T_T %s needs more experiment.....\n", exp_result);//die result 자리  
-                       }
-                       else
-                       printf("This is not experiment time. You can go through this lab.\n");
+                      if(exp_result >= 5)
+                      {
+                          printf(" -> Experiment result : %i, success! %s can exit this lab!\n", exp_result);
+                          smm_players[player].flag_doingexp == 0;
+                      }
+                      else
+                      printf(" -> Experiment result : %i, fail T_T %s needs more experiment.....\n", exp_result);//die result 자리  
+                  }
+                  else
+                  printf("This is not experiment time. You can go through this lab.\n");
                        
-                       break;
-           }
-                   
-                   
-           case SMMNODE_TYPE_HOME: 
-               smm_players[player].energy +=energy;
-               printf("returned to HOME! energy charged by 18(total energy : %i)\n", smm_players[player].energy);
-                   if (smm_players[player].credit >= GRADUATE_CREDIT)
-                   {
-                   smm_players[player].flag_graduated = 1;
-                   
-                   break;                               
-                   }
+                  break;
+              }
+         
+              case SMMNODE_TYPE_HOME: 
+              {
+                  smm_players[player].energy +=energy;
+                  printf("returned to HOME! energy charged by 18(total energy : %i)\n", smm_players[player].energy);
+                  if (smm_players[player].credit >= GRADUATE_CREDIT)
+                  {
+                      smm_players[player].flag_graduated = 1;
+                  }
+                  break;                               
+              }   
             
         
-           case SMMNODE_TYPE_GOTOLAB: 
-               printf("OMG! This is experiment time!! Player %s goes to the lab.\n", smm_players[player].name);
-               smm_players[player].flag_doingexp == 1;//status change(doing an experiment)
-               break;
-         
-           case SMMNODE_TYPE_FOODCHANCE: //get random food and charge energy
-           { 
-               char pick_food;
-               int foodCount = smmdb_len(LISTNO_FOODCARD);//number of food card  
-               int foodcard = rand()%foodCount;//to get random index(food card)
-               void* foodptr = smmdb_getData(LISTNO_FOODCARD, foodcard);
-            
-               printf("%s gets a food chance! ", smm_players[player].name);
-               printf("press any key to pick a food card:%c\n");
-               scanf(" %c", &pick_food); 
-               fflush(stdin);
+              case SMMNODE_TYPE_GOTOLAB: //status change(doing an experiment), and move to LABORATORY
+              {
+                   printf("OMG! This is experiment time!! Player %s goes to the lab.\n", smm_players[player].name);
                
-               smm_players[player].energy += smmObj_getObjectEnergy(foodptr);//increase accumulated energy by energy of current node
-               smmdb_getData(LISTNO_NODE, smm_players[player].pos);
-               printf("%s picks %s and charges %i(remained energy : %i)\n", smm_players[player].name, smmObj_getObjectName(foodptr),
-                                                                            smmObj_getObjectEnergy(foodptr), smm_players[player].energy);
+                   //status change(doing an experiment)
+                   smm_players[player].flag_doingexp == 1;
+                   //move to LABBORATORY(currunt pos--> LAB NODE)
+                   smm_players[player].pos == SMMNODE_TYPE_LABORATORY;
+            
+                   break;
+              }
+         
+              case SMMNODE_TYPE_FOODCHANCE: //get random food and charge energy
+              { 
+                  char pick_food;
+                  int foodCount = smmdb_len(LISTNO_FOODCARD);//number of food card  
+                  int foodcard = rand()%foodCount;//to get random index(food card)
+                  void* foodptr = smmdb_getData(LISTNO_FOODCARD, foodcard);
+            
+                  printf("%s gets a food chance! ", smm_players[player].name);
+                  printf("press any key to pick a food card:%c\n");
+                  scanf(" %c", &pick_food); 
+                  fflush(stdin);
+               
+                  smm_players[player].energy += smmObj_getObjectEnergy(foodptr);//increase accumulated energy by energy of current node
+                  smmdb_getData(LISTNO_NODE, smm_players[player].pos);
+                  printf("%s picks %s and charges %i(remained energy : %i)\n", 
+                                        smm_players[player].name, smmObj_getObjectName(foodptr), smmObj_getObjectEnergy(foodptr), smm_players[player].energy);
                     
-            break;
-            }
+              break;
+              }
             
             
-            case SMMNODE_TYPE_FESTIVAL: //get random festival card (and do misson)
-            {
-                char pick_fest;
-                int festCount = smmdb_len(LISTNO_FESTCARD);//number of festival card
-                int festcard = rand()%festCount;//to get random index(festivl card)
-                void* festptr = smmdb_getData(LISTNO_FESTCARD, festcard);
+              case SMMNODE_TYPE_FESTIVAL: //get random festival card (and do misson)
+              {
+                  char pick_fest;
+                  int festCount = smmdb_len(LISTNO_FESTCARD);//number of festival card
+                  int festcard = rand()%festCount;//to get random index(festivl card)
+                  void* festptr = smmdb_getData(LISTNO_FESTCARD, festcard);
                 
-                printf("%s participates to Snow Festival!  ", smm_players[player].name);  
-                printf("press any key to pick a festival card\n");
-                scanf(" %c", &pick_fest);
-                fflush(stdin);
+                  printf("%s participates to Snow Festival!  ", smm_players[player].name);  
+                  printf("press any key to pick a festival card\n");
+                  scanf(" %c", &pick_fest);
+                  fflush(stdin);
             
-                printf("MISSION : %s !!\n(Press any key when mission is ended.)\n", smmObj_getObjectName(festptr)); 
+                  printf("MISSION : %s !!\n(Press any key when mission is ended.)\n", smmObj_getObjectName(festptr)); 
             
-            break;
-            }
+                  break;
+              }
            
-            default:
-            break; 
-            system("PAUSE");
-     }
+              default:
+              break; 
+         }
 }    
 
 
