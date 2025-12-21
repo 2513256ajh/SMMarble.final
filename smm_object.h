@@ -8,15 +8,14 @@
 #ifndef smm_object_h
 #define smm_object_h
 
-/* node type :
-    lecture,
-    restaurant,
-    laboratory,
-    home,
-    experiment,
-    foodChance,
-    festival
-*/
+
+#define SMMNODE_OBJTYPE_BOARD          0
+#define SMMNODE_OBJTYPE_GRADE          1
+#define SMMNODE_OBJTYPE_FOOD           2
+#define SMMNODE_OBJTYPE_FEST           3
+
+
+//node type
 #define SMMNODE_TYPE_LECTURE           0
 #define SMMNODE_TYPE_RESTAURANT        1
 #define SMMNODE_TYPE_LABORATORY        2
@@ -25,11 +24,8 @@
 #define SMMNODE_TYPE_FOODCHANCE        5
 #define SMMNODE_TYPE_FESTIVAL          6
 
-#define SMMNODE_OBJTYPE_BOARD          0
-#define SMMNODE_OBJTYPE_GRADE          1
-#define SMMNODE_OBJTYPE_FOOD           2
-#define SMMNODE_OBJTYPE_FEST           3
 
+//grade
 #define GRADE_Ap                       0
 #define GRADE_A0                       1
 #define GRADE_Am                       2
@@ -39,18 +35,8 @@
 #define GRADE_Cp                       6
 #define GRADE_C0                       7
 #define GRADE_Cm                       8
-/* grade :
-    A+,
-    A0,
-    A-,
-    B+,
-    B0,
-    B-,
-    C+,
-    C0,
-    C-
-*/
-#define SMMNODE_MAX_GRADE       9
+
+#define SMMNODE_MAX_GRADE              9
 
 
 //object generation

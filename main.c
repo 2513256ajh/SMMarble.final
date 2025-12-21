@@ -244,6 +244,7 @@ void actionNode(int player)//action code when a player stays at a node
      int energy = smmObj_getObjectEnergy(ptr);
      int grade;
      void* gradePtr;
+     int i;
     
      printf(" --> player %s, pos : %i, type : %s, credit : %i, energy : %i\n", 
                    smm_players[player].name, smm_players[player].pos, smmObj_getTypeName(ptr), credit, smm_players[player].energy);
@@ -331,8 +332,10 @@ void actionNode(int player)//action code when a player stays at a node
          
               case SMMNODE_TYPE_HOME: 
               {
-                  smm_players[player].energy +=energy;
+                  smm_players[player].energy +=energy;//charge energy
                   printf("returned to HOME! energy charged by 18(total energy : %i)\n", smm_players[player].energy);
+                  
+                  //case: graduated(current pos: HOME and player's credit is higher than GRADUATE_CREDIT)
                   if (smm_players[player].credit >= GRADUATE_CREDIT)
                   {
                       smm_players[player].flag_graduated = 1;
@@ -341,21 +344,32 @@ void actionNode(int player)//action code when a player stays at a node
               }   
             
         
-              case SMMNODE_TYPE_GOTOLAB: //status change(doing an experiment), and move to LABORATORY
+              case SMMNODE_TYPE_GOTOLAB: //status change(doing an experiment), and move to LABORATORY//(refers to 1.Boardfonfiging, goForward, case SMMNODE_TYPE_FOODCHANCE)
               {
+                   int boardnode = rand()%smm_board_nr;//to get random node
+                   void* Boardptr = smmdb_getData(LISTNO_NODE, boardnode);
+                   void* ptr;
+                   
                    printf("OMG! This is experiment time!! Player %s goes to the lab.\n", smm_players[player].name);
                
                    //status change(doing an experiment)
-                   smm_players[player].flag_doingexp == 1;
+                   smm_players[player].flag_doingexp = 1;
                    //move to LABBORATORY(currunt pos--> LAB NODE)
-                   smm_players[player].pos == SMMNODE_TYPE_LABORATORY;
+                   do
+                   {
+                       boardnode = rand()%smm_board_nr;//to get random board node
+                       Boardptr = smmdb_getData(LISTNO_NODE, boardnode);
+                   }while(smmObj_getObjectType(Boardptr) != SMMNODE_TYPE_LABORATORY);//do random until to get LABORATORY node
+                   
+                   smm_players[player].pos = boardnode;
             
                    break;
               }
-         
-              case SMMNODE_TYPE_FOODCHANCE: //get random food and charge energy
+              
+          
+              case SMMNODE_TYPE_FOODCHANCE: //get random food and charge energy//(refers to findGrade, rolldie, case RESTAURANT)
               { 
-                  char pick_food;
+                  char pick_food;//for scanf(store user's input)
                   int foodCount = smmdb_len(LISTNO_FOODCARD);//number of food card  
                   int foodcard = rand()%foodCount;//to get random index(food card)
                   void* foodptr = smmdb_getData(LISTNO_FOODCARD, foodcard);
@@ -374,9 +388,9 @@ void actionNode(int player)//action code when a player stays at a node
               }
             
             
-              case SMMNODE_TYPE_FESTIVAL: //get random festival card (and do misson)
+              case SMMNODE_TYPE_FESTIVAL: //get random festival card (and do misson)//(refers to case SMMNODE_TYPE_FESTIVAL)
               {
-                  char pick_fest;
+                  char pick_fest;//for scanf(store user's input)
                   int festCount = smmdb_len(LISTNO_FESTCARD);//number of festival card
                   int festcard = rand()%festCount;//to get random index(festivl card)
                   void* festptr = smmdb_getData(LISTNO_FESTCARD, festcard);
@@ -432,9 +446,8 @@ int main(int argc, const char * argv[]) {
          printf("%s %i %i %i\n" , name, type, credit, energy);
          ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_BOARD, type, credit, energy, 0);
          //smm_board_nr = smmdb_addTail(LISTNO_NODE, ptr);
-         smmdb_addTail(LISTNO_NODE, ptr);
+         smmdb_addTail(LISTNO_NODE , ptr);
          smm_board_nr++;
-         
     }
     fclose(fp);
     printf("Total number of board nodes : %i\n", smm_board_nr);

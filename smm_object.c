@@ -51,7 +51,7 @@ typedef struct {
 
 //object generation
 void* smmObj_genObject(char* name, int objType, int type, int credit, int energy, int grade)
-{/////////  
+{
     smmObj_object_t* ptr;
     ptr = (smmObj_object_t*)malloc(sizeof(smmObj_object_t)); 
     
