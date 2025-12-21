@@ -34,7 +34,7 @@ typedef struct {
 
 smm_player_t *smm_players;
 
-//
+
 typedef struct {
     char name[MAX_CHARNAME];//food name
     int energy;//food energy
@@ -261,7 +261,7 @@ void actionNode(int player)//action code when a player stays at a node
                   ptr = smmdb_getData(LISTNO_NODE, smm_players[player].pos);
            
                   //case 1: have enough energy, new lecture
-                  if((smm_players[player].energy >= smmObj_getObjectEnergy(ptr))&&(findGrade(player, smmObj_getObjectName(ptr))!= NULL ))//////////////////////////////////////
+                  if((smm_players[player].energy >= smmObj_getObjectEnergy(ptr))&&(findGrade(player, smmObj_getObjectName(ptr))!= NULL ))
                   {
                        do{
                        //choose drop or join
@@ -277,9 +277,9 @@ void actionNode(int player)//action code when a player stays at a node
             
                            gradePtr = smmObj_genObject(smmObj_getObjectName(ptr), SMMNODE_OBJTYPE_GRADE, type, credit, energy, grade);
                            smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr);
-                           printf("%s successfully takes the lecture %s with grade %c (average : %i), remained energy : %i)\n", 
-                             smm_players[player].name, smmObj_getObjectName(ptr), gradePtr, calcAverageGrade(smm_players[player].name), smm_players[player].energy);  
-                       }//평균 학점 이상한 듯  
+                           printf("%s successfully takes the lecture %s with grade %c , remained energy : %i)\n", 
+                             smm_players[player].name, smmObj_getObjectName(ptr), gradePtr,smm_players[player].energy);  
+                       }////exclude-average((average : %i) / calcAverageGrade(smm_players[player].name),)
                        //case 1-2: drop
                        else if(choice == drop)
                        printf("Player %s drops the lecture %s\n", smm_players[player].name, smmObj_getObjectName(ptr));
@@ -296,7 +296,7 @@ void actionNode(int player)//action code when a player stays at a node
                
               //case3: already took the lecture                                                                               
               else if((findGrade(player, smmObj_getObjectName(ptr))== NULL ))
-              printf("%s already took a class\n", smm_players[player].name);//////////멘트 확인  
+              printf("%s already took a class\n", smm_players[player].name);
               else ; 
                
               break;
@@ -311,7 +311,7 @@ void actionNode(int player)//action code when a player stays at a node
                }
             
               case SMMNODE_TYPE_LABORATORY://roll die when player's status is doing experiment
-                                                               //ㄴ(die result>=threshold: experiment end/ die result< threshold: stay NODE LABORATORY and do experience)
+                                                          //ㄴ(die result>=threshold: experiment end/ die result< threshold: stay NODE LABORATORY and do experience)
               { 
                   //case1 : status Doing experiment and reached to the LABORATORY NODE
                   if(smm_players[player].flag_doingexp == 1)
@@ -353,7 +353,7 @@ void actionNode(int player)//action code when a player stays at a node
             
         
               case SMMNODE_TYPE_GOTOLAB: //status change(doing experiments), and move to LABORATORY, decide standard value of success experiment for random
-                                                                              //(refers to 1.Boardfonfiging, goForward, case SMMNODE_TYPE_FOODCHANCE)
+                                                                                            //(refers to 1.Boardfonfiging, goForward, case SMMNODE_TYPE_FOODCHANCE)
               {
                    int boardnode = rand()%smm_board_nr;//to get random node
                    void* Boardptr = smmdb_getData(LISTNO_NODE, boardnode);
@@ -401,7 +401,7 @@ void actionNode(int player)//action code when a player stays at a node
               }
             
             
-              case SMMNODE_TYPE_FESTIVAL: //get random festival card (and do misson)//(refers to case SMMNODE_TYPE_FESTIVAL)
+              case SMMNODE_TYPE_FESTIVAL: //get random festival card (and do misson)  //(refers to case SMMNODE_TYPE_FESTIVAL)
               {
                   char pick_fest;//for scanf(store user's input)
                   int festCount = smmdb_len(LISTNO_FESTCARD);//number of festival card
@@ -546,8 +546,8 @@ int main(int argc, const char * argv[]) {
          printPlayerStatus();
         
          //4-2. die rolling (if not in experiment)
-         if(smm_players[i].flag_doingexp == 0)
-         die_result =  rolldie(turn);
+         if(smm_players[turn].flag_doingexp == 0)
+             die_result =  rolldie(turn);
         
          //4-3. go forward
          goForward(turn, die_result);
@@ -558,11 +558,12 @@ int main(int argc, const char * argv[]) {
          //4-5. next turn
          turn = (turn + 1)%smm_player_nr;
     }
-    //game end(check graduate, graduated person printing)
-    if(smm_players[i].flag_graduated)
-    {        
-    printf("%s is graduated !!", smm_players[i].name); 
-    printGrades(i);
+    //game end(find graduated player and graduated person printing)
+    for(i=0;i<smm_player_nr;i++)
+    {
+        if(smm_players[i].flag_graduated==1)        
+        printf("%s is graduated !!", smm_players[i].name); 
+        printGrades(i);
     }
             
     free(smm_players);
