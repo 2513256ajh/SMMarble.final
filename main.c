@@ -202,9 +202,9 @@ void generatePlayers(int n, int initEnergy) //generate a new player
 
 void printPlayerStatus(void) //print all player status at the beginning of each turn
 {
-     int i,j;//j for player array index
+     int i;
      void *ptr; 
-     ptr = smmdb_getData(LISTNO_NODE, smm_players[j].pos);
+     ptr = smmdb_getData(LISTNO_NODE, smm_players[i].pos);
      printf("\n\n=====================PLAYER STATUS=====================\n");
      
      for (i=0;i<smm_player_nr;i++)
@@ -246,6 +246,7 @@ void actionNode(int player)//action code when a player stays at a node
      int grade;
      void* gradePtr;
      int i;
+     int threshold = 0;
     
      printf(" --> player %s, pos : %i, type : %s, credit : %i, energy : %i\n", 
                    smm_players[player].name, smm_players[player].pos, smmObj_getTypeName(ptr), credit, smm_players[player].energy);
@@ -309,22 +310,28 @@ void actionNode(int player)//action code when a player stays at a node
                   break;
                }
             
-              case SMMNODE_TYPE_LABORATORY:
+              case SMMNODE_TYPE_LABORATORY://roll die when player's status is doing experiment
+                                                               //¤¤(die result>=threshold: experiment end/ die result< threshold: stay NODE LABORATORY and do experience)
               { 
-                  int exp_result;
+                  //case1 : status Doing experiment and reached to the LABORATORY NODE
                   if(smm_players[player].flag_doingexp == 1)
                   {
-                      printf(" ->Experiment time! Let's see if you can satisfy professor (threshold: %i)\n", exp_result);
-                      exp_result = rolldie(player); //////////////-  
+                      int exp_result;//experiment result
+                  
+                      printf(" ->Experiment time! Let's see if you can satisfy professor (threshold: %i)\n", threshold);
+                      exp_result = rand()%MAX_DIE + 1;//to get random experiment result
             
-                      if(exp_result >= 5)
+                      if(exp_result >= threshold)
                       {
-                          printf(" -> Experiment result : %i, success! %s can exit this lab!\n", exp_result);
-                          smm_players[player].flag_doingexp == 0;
+                          //case1-1: success experiment--> exit the lab
+                          printf(" -> Experiment result : %i, success! %s can exit this lab!\n", exp_result, smm_players[player].name);
+                          smm_players[player].flag_doingexp = 0;
                       }
+                      //case1-2: fail experiment
                       else
-                      printf(" -> Experiment result : %i, fail T_T %s needs more experiment.....\n", exp_result);//die result ÀÚ¸®  
+                      printf(" -> Experiment result : %i, fail T_T %s needs more experiment.....\n", exp_result, smm_players[player].name);
                   }
+                  //case2 : status Not doing experiment and reached to the LABORATORY NODE
                   else
                   printf("This is not experiment time. You can go through this lab.\n");
                        
@@ -345,24 +352,29 @@ void actionNode(int player)//action code when a player stays at a node
               }   
             
         
-              case SMMNODE_TYPE_GOTOLAB: //status change(doing an experiment), and move to LABORATORY//(refers to 1.Boardfonfiging, goForward, case SMMNODE_TYPE_FOODCHANCE)
+              case SMMNODE_TYPE_GOTOLAB: //status change(doing experiments), and move to LABORATORY, decide standard value of success experiment for random
+                                                                              //(refers to 1.Boardfonfiging, goForward, case SMMNODE_TYPE_FOODCHANCE)
               {
                    int boardnode = rand()%smm_board_nr;//to get random node
                    void* Boardptr = smmdb_getData(LISTNO_NODE, boardnode);
                    void* ptr;
                    
                    printf("OMG! This is experiment time!! Player %s goes to the lab.\n", smm_players[player].name);
-               
+        
                    //status change(doing an experiment)
                    smm_players[player].flag_doingexp = 1;
-                   //move to LABBORATORY(currunt pos--> LAB NODE)
+                   
+                   //move to LABORATORY(currunt pos--> LAB NODE)
                    do
                    {
                        boardnode = rand()%smm_board_nr;//to get random board node
                        Boardptr = smmdb_getData(LISTNO_NODE, boardnode);
                    }while(smmObj_getObjectType(Boardptr) != SMMNODE_TYPE_LABORATORY);//do random until to get LABORATORY node
                    
-                   smm_players[player].pos = boardnode;
+                   smm_players[player].pos = boardnode;//players position-->LABORATORY NODE
+                   
+                   //decide threshold for random(stand value of success experiment)
+                   threshold = rand()%MAX_DIE + 1;
             
                    break;
               }
@@ -534,6 +546,7 @@ int main(int argc, const char * argv[]) {
          printPlayerStatus();
         
          //4-2. die rolling (if not in experiment)
+         if(smm_players[i].flag_doingexp == 0)
          die_result =  rolldie(turn);
         
          //4-3. go forward
